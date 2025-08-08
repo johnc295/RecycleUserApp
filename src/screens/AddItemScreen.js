@@ -31,6 +31,7 @@ export default function AddItemScreen({ navigation }) {
     { label: 'Non-Recyclable', value: 'Non-Recyclable' },
   ];
 
+  // Open image picker from gallery
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
@@ -51,6 +52,7 @@ export default function AddItemScreen({ navigation }) {
     }
   }
 
+  // Open camera to take photo
   async function takePhoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     
@@ -70,6 +72,7 @@ export default function AddItemScreen({ navigation }) {
     }
   }
 
+  // Upload image to Firebase Storage
   async function uploadImage() {
     if (!image) return null;
 
@@ -77,6 +80,7 @@ export default function AddItemScreen({ navigation }) {
       const response = await fetch(image.uri);
       const blob = await response.blob();
       
+      // Create unique filename with timestamp and user ID
       const imageRef = ref(storage, `items/${Date.now()}_${user.uid}`);
       await uploadBytes(imageRef, blob);
       
@@ -87,6 +91,7 @@ export default function AddItemScreen({ navigation }) {
     }
   }
 
+  // Handle form submission
   async function handleSubmit() {
     if (!name || !description || !recyclabilityStatus) {
       Alert.alert('Error', 'Please fill in all required fields');
@@ -96,11 +101,13 @@ export default function AddItemScreen({ navigation }) {
     try {
       setLoading(true);
       
+      // Upload image if selected
       let imageUrl = null;
       if (image) {
         imageUrl = await uploadImage();
       }
 
+      // Create item data object
       const itemData = {
         name: name.trim(),
         description: description.trim(),
@@ -113,6 +120,7 @@ export default function AddItemScreen({ navigation }) {
         createdAt: new Date(),
       };
 
+      // Save to Firestore
       await addDoc(collection(db, 'items'), itemData);
       
       Alert.alert('Success', 'Item added successfully!', [
@@ -129,41 +137,37 @@ export default function AddItemScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={globalStyles.container}
-      behavior={(() => {
-        if (Platform.OS === 'ios') {
-          return 'padding';
-        } else {
-          return 'height';
-        }
-      })()}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView style={globalStyles.screenContainer}>
+      <ScrollView contentContainerStyle={globalStyles.screenContainer}>
         <Text style={globalStyles.title}>Add New Item</Text>
 
+        {/* Item details form */}
         <View style={globalStyles.card}>
-          <Text style={globalStyles.subtitle}>Item Information</Text>
-
+          <Text style={globalStyles.subtitle}>Item Details</Text>
+          
           <TextInput
             style={globalStyles.input}
             placeholder="Item name"
             value={name}
             onChangeText={setName}
-            maxLength={100}
+            autoCapitalize="words"
           />
 
           <TextInput
-            style={[globalStyles.input, { height: 100, textAlignVertical: 'top' }]}
-            placeholder="Description (how to recycle, materials, etc.)"
+            style={globalStyles.input}
+            placeholder="Description"
             value={description}
             onChangeText={setDescription}
             multiline
-            maxLength={500}
+            numberOfLines={3}
+            textAlignVertical="top"
           />
 
+          {/* Recyclability status selection */}
           <Text style={[globalStyles.text, { marginTop: 16, marginBottom: 8 }]}>
             Recyclability Status:
           </Text>
-
           {recyclabilityOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
@@ -176,7 +180,7 @@ export default function AddItemScreen({ navigation }) {
             >
               <Text style={[
                 globalStyles.buttonTextOutline,
-                recyclabilityStatus === option.value && globalStyles.buttonText
+                recyclabilityStatus === option.value && { color: colors.white }
               ]}>
                 {option.label}
               </Text>
@@ -184,53 +188,43 @@ export default function AddItemScreen({ navigation }) {
           ))}
         </View>
 
+        {/* Image selection */}
         <View style={globalStyles.card}>
-          <Text style={globalStyles.subtitle}>Item Image</Text>
+          <Text style={globalStyles.subtitle}>Add Photo (Optional)</Text>
           
-          {image ? (
-            <View>
+          {image && (
+            <View style={globalStyles.imageContainer}>
               <Image source={{ uri: image.uri }} style={globalStyles.image} />
-              <TouchableOpacity
-                style={[globalStyles.button, globalStyles.buttonSecondary, { marginTop: 8 }]}
-                onPress={() => setImage(null)}
-              >
-                <Text style={globalStyles.buttonText}>Remove Image</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={[globalStyles.row, { justifyContent: 'space-around' }]}>
-              <TouchableOpacity
-                style={[globalStyles.button, globalStyles.buttonOutline]}
-                onPress={pickImage}
-              >
-                <Ionicons name="images" size={24} color={colors.green} />
-                <Text style={globalStyles.buttonTextOutline}>Gallery</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[globalStyles.button, globalStyles.buttonOutline]}
-                onPress={takePhoto}
-              >
-                <Ionicons name="camera" size={24} color={colors.green} />
-                <Text style={globalStyles.buttonTextOutline}>Camera</Text>
-              </TouchableOpacity>
             </View>
           )}
+
+          <View style={globalStyles.row}>
+            <TouchableOpacity
+              style={[globalStyles.button, globalStyles.buttonOutline, { flex: 1, marginRight: 8 }]}
+              onPress={pickImage}
+            >
+              <Ionicons name="images" size={20} color={colors.green} style={{ marginRight: 8 }} />
+              <Text style={globalStyles.buttonTextOutline}>Gallery</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[globalStyles.button, globalStyles.buttonOutline, { flex: 1, marginLeft: 8 }]}
+              onPress={takePhoto}
+            >
+              <Ionicons name="camera" size={20} color={colors.green} style={{ marginRight: 8 }} />
+              <Text style={globalStyles.buttonTextOutline}>Camera</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
+        {/* Submit button */}
         <TouchableOpacity
           style={[globalStyles.button, loading && { opacity: 0.7 }]}
           onPress={handleSubmit}
           disabled={loading}
         >
           <Text style={globalStyles.buttonText}>
-            {(() => {
-              if (loading) {
-                return 'Adding Item...';
-              } else {
-                return 'Add Item';
-              }
-            })()}
+            {loading ? 'Adding Item...' : 'Add Item'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

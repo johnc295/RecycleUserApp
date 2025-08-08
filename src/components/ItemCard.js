@@ -18,7 +18,7 @@ export default function ItemCard({ item, navigation }) {
   const [userVote, setUserVote] = useState(null);
   const { user } = useAuth();
 
-  // Load user's previous vote when component loads
+  // Load user's previous vote when component mounts
   useEffect(() => {
     loadUserVote();
   }, []);
@@ -39,7 +39,7 @@ export default function ItemCard({ item, navigation }) {
     }
   }
 
-  // Handle voting
+  // Handle upvote/downvote
   async function handleVote(voteType) {
     if (!user) {
       Alert.alert('Error', 'Please login to vote');
@@ -130,11 +130,13 @@ export default function ItemCard({ item, navigation }) {
 
       {/* Item image */}
       {item.imageUrl && (
-        <Image
-          source={{ uri: item.imageUrl }}
-          style={globalStyles.image}
-          resizeMode="cover"
-        />
+        <View style={globalStyles.imageContainer}>
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={globalStyles.image}
+            resizeMode="cover"
+          />
+        </View>
       )}
 
       {/* Item description */}

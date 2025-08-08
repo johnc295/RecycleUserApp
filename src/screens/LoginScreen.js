@@ -19,7 +19,7 @@ export default function LoginScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
 
-  // Handle login button press
+  // Handle login button 
   async function handleLogin() {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -64,7 +64,7 @@ export default function LoginScreen({ navigation }) {
         <View style={globalStyles.center}>
           <Ionicons name="leaf" size={80} color={colors.green} />
           <Text style={[globalStyles.title, { marginTop: 16 }]}>
-            RecycleUserApp
+            Recycle?
           </Text>
           <Text style={[globalStyles.text, { textAlign: 'center', marginBottom: 32 }]}>
             Share knowledge about recyclability

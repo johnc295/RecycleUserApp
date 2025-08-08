@@ -108,8 +108,14 @@ export const globalStyles = StyleSheet.create({
   // Images
   image: {
     width: '100%',
-    height: 200,
+    height: '100%',
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 16 / 9,
     marginVertical: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   
   // Avatar

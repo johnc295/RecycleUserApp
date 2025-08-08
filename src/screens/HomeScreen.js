@@ -20,10 +20,12 @@ export default function HomeScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
 
+  // Load items when component mounts
   useEffect(() => {
     loadItems();
   }, []);
 
+  // Fetch recent items from Firebase
   async function loadItems() {
     try {
       setLoading(true);
@@ -44,6 +46,7 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
+  // Handle pull-to-refresh
   async function onRefresh() {
     setRefreshing(true);
     await loadItems();
@@ -85,6 +88,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={globalStyles.container}>
       <View style={globalStyles.screenContainer}>
+        {/* Header with title and add button */}
         <View style={[globalStyles.row, globalStyles.spaceBetween, { marginBottom: 16 }]}>
           <Text style={globalStyles.title}>Recent Items</Text>
           <TouchableOpacity
@@ -95,14 +99,15 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {/* Items list */}
         <FlatList
           data={items}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          ListEmptyComponent={renderEmptyState}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          ListEmptyComponent={renderEmptyState}
           showsVerticalScrollIndicator={false}
         />
       </View>

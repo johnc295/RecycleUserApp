@@ -49,11 +49,13 @@ export default function ItemDetailScreen({ route, navigation }) {
         {/* Item image */}
         {item.imageUrl && (
           <View style={globalStyles.card}>
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={globalStyles.image}
-              resizeMode="cover"
-            />
+            <View style={globalStyles.imageContainer}>
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={globalStyles.image}
+                resizeMode="cover"
+              />
+            </View>
           </View>
         )}
 
