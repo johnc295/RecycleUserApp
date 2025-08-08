@@ -14,13 +14,15 @@ import { globalStyles, colors } from '../styles/styles';
 import ItemCard from '../components/ItemCard';
 
 export default function SearchScreen({ navigation }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  // State variables to store search data and UI states
+  const [searchQuery, setSearchQuery] = useState('');  // Store what user types in search
+  const [items, setItems] = useState([]);             // Store search results
+  const [loading, setLoading] = useState(false);      // Track if search is in progress
+  const [searched, setSearched] = useState(false);    // Track if user has searched yet
 
-  // Search for items in Firebase database
+  // This function searches for items in the database based on user's input
   async function searchItems() {
+    // If search box is empty, clear results and return
     if (!searchQuery.trim()) {
       setItems([]);
       setSearched(false);
@@ -28,46 +30,50 @@ export default function SearchScreen({ navigation }) {
     }
 
     try {
-      setLoading(true);
-      setSearched(true);
+      setLoading(true);   // Show loading spinner
+      setSearched(true);  // Mark that user has searched
 
       const itemsRef = collection(db, 'items');
       
-      // Create query to search items by name
+      // Create a query to search items by name
+      // This uses Firebase's text search capabilities
       const q = query(
         itemsRef,
-        where('name', '>=', searchQuery.trim()),
-        where('name', '<=', searchQuery.trim() + '\uf8ff'),
-        orderBy('name')
+        where('name', '>=', searchQuery.trim()),           // Find names that start with search term
+        where('name', '<=', searchQuery.trim() + '\uf8ff'), // Find names that end after search term
+        orderBy('name')  // Sort results alphabetically
       );
 
       const querySnapshot = await getDocs(q);
       
+      // Convert database results into a format we can use
       const searchResults = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+        id: doc.id,  // Each item gets a unique ID
+        ...doc.data()  // Spread all the item data
       }));
 
-      setItems(searchResults);
+      setItems(searchResults);  // Save search results to state
     } catch (error) {
       console.error('Error searching items:', error);
-      setItems([]);
+      setItems([]);  // Clear results if there's an error
     } finally {
-      setLoading(false);
+      setLoading(false);  // Hide loading spinner
     }
   }
 
-  // Clear search and reset screen state
+  // This function clears the search and resets the screen
   function clearSearch() {
-    setSearchQuery('');
-    setItems([]);
-    setSearched(false);
+    setSearchQuery('');    // Clear the search text
+    setItems([]);         // Clear search results
+    setSearched(false);   // Reset search state
   }
 
+  // This function renders each search result item
   function renderItem({ item }) {
     return <ItemCard item={item} navigation={navigation} />;
   }
 
+  // This function shows what to display when there are no search results
   function renderEmptyState() {
     return (
       <View style={globalStyles.emptyState}>
@@ -82,7 +88,7 @@ export default function SearchScreen({ navigation }) {
   return (
     <View style={globalStyles.container}>
       <View style={globalStyles.screenContainer}>
-        {/* Search input */}
+        {/* Search input section */}
         <View style={globalStyles.searchContainer}>
           <View style={globalStyles.row}>
             <Ionicons name="search" size={20} color={colors.darkGray} style={{ marginRight: 8 }} />
@@ -90,10 +96,11 @@ export default function SearchScreen({ navigation }) {
               style={globalStyles.searchInput}
               placeholder="Search items..."
               value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={searchItems}
-              returnKeyType="search"
+              onChangeText={setSearchQuery}  // Update search text as user types
+              onSubmitEditing={searchItems}  // Search when user presses enter
+              returnKeyType="search"  // Show "search" button on keyboard
             />
+            {/* Show clear button only if there's text in search box */}
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={clearSearch}>
                 <Ionicons name="close-circle" size={20} color={colors.darkGray} />
@@ -102,8 +109,9 @@ export default function SearchScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Search results */}
+        {/* Search results section */}
         {loading ? (
+          // Show loading spinner while searching
           <View style={globalStyles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.green} />
             <Text style={[globalStyles.text, { marginTop: 16 }]}>
@@ -111,12 +119,13 @@ export default function SearchScreen({ navigation }) {
             </Text>
           </View>
         ) : (
+          // Show search results list
           <FlatList
-            data={items}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            ListEmptyComponent={renderEmptyState}
-            showsVerticalScrollIndicator={false}
+            data={items}  // The search results to display
+            renderItem={renderItem}  // How to render each result
+            keyExtractor={(item) => item.id}  // Unique key for each item
+            ListEmptyComponent={renderEmptyState}  // What to show when no results
+            showsVerticalScrollIndicator={false}  // Hide scroll bar
           />
         )}
       </View>

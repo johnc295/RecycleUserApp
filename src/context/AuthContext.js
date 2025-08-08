@@ -8,58 +8,66 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 
+// Create a context to share authentication data across the app
 const AuthContext = createContext({});
 
-// Custom hook to use auth context
+// Custom hook to use auth context - makes it easy to access auth data anywhere
 export function useAuth() {
   return useContext(AuthContext);
 }
 
+// This component provides authentication data to the entire app
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // State variables to track user and loading status
+  const [user, setUser] = useState(null);        // Store current user (null if not logged in)
+  const [loading, setLoading] = useState(true);  // Track if we're still checking auth status
 
-  // Create new user account
+  // This function creates a new user account with email and password
   function signup(email, password) {
     return createUserWithEmailAndPassword(auth, email, password);
   }
 
-  // Sign in existing user
+  // This function logs in an existing user with email and password
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
-  // Sign out current user
+  // This function logs out the current user
   function logout() {
     return signOut(auth);
   }
 
-  // Send password reset email
+  // This function sends a password reset email to the user
   function resetPassword(email) {
     return sendPasswordResetEmail(auth, email);
   }
 
-  // Listen for authentication state changes
+  // This runs when the component first loads
+  // It listens for changes in the user's authentication status
   useEffect(() => {
+    // Listen for authentication state changes (login/logout)
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
+      setUser(user);        // Update user state
+      setLoading(false);    // Stop loading
     });
 
-    return unsubscribe; // Cleanup subscription
+    return unsubscribe; // Cleanup subscription when component unmounts
   }, []);
 
+  // Create the value object that will be shared across the app
   const value = {
-    user,
-    signup,
-    login,
-    logout,
-    resetPassword,
-    loading
+    user,           // Current user data
+    signup,         // Function to create account
+    login,          // Function to log in
+    logout,         // Function to log out
+    resetPassword,  // Function to reset password
+    loading         // Whether we're still loading auth status
   };
 
   return (
+    // Provide the auth data to all child components
     <AuthContext.Provider value={value}>
+      {/* Only show the app when we're done loading auth status */}
       {!loading && children}
     </AuthContext.Provider>
   );

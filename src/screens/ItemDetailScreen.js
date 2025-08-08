@@ -10,18 +10,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { globalStyles, colors } from '../styles/styles';
 
 export default function ItemDetailScreen({ route, navigation }) {
+  // Get the item data that was passed from the previous screen
   const { item } = route.params;
 
-  // Get badge style based on recyclability status
+  // This function creates the colored badge that shows recyclability status
   function getBadgeStyle() {
     const status = item.recyclabilityStatus?.toLowerCase();
     let badgeStyle = globalStyles.badge;
     let badgeText = item.recyclabilityStatus || 'Unknown';
 
+    // Choose badge color based on recyclability status
     if (status === 'recyclable') {
-      badgeStyle = [globalStyles.badge, globalStyles.recyclableBadge];
+      badgeStyle = [globalStyles.badge, globalStyles.recyclableBadge];  // Green badge
     } else if (status === 'non-recyclable') {
-      badgeStyle = [globalStyles.badge, globalStyles.nonRecyclableBadge];
+      badgeStyle = [globalStyles.badge, globalStyles.nonRecyclableBadge];  // Red badge
     }
 
     return (

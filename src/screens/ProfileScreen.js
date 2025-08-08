@@ -10,30 +10,36 @@ import { useAuth } from '../context/AuthContext';
 import { globalStyles, colors } from '../styles/styles';
 
 export default function ProfileScreen({ navigation }) {
+  // Get user data and authentication functions from our auth system
   const { user, logout, resetPassword } = useAuth();
 
+  // This function handles when user taps the logout button
   async function handleLogout() {
     console.log('Logout button pressed');
     try {
       console.log('Attempting logout...');
-      await logout();
+      await logout();  // Call the logout function from auth system
       console.log('Logout successful');
     } catch (error) {
       console.error('Logout error:', error);
+      // Show error message if logout fails
       if (typeof window !== 'undefined') {
         window.alert('Failed to logout. Please try again.');
       }
     }
   }
 
+  // This function handles when user taps the reset password button
   async function handleResetPassword() {
     try {
+      // Send password reset email to user's email address
       await resetPassword(user.email);
       if (typeof window !== 'undefined') {
         window.alert('Password reset email sent! Check your inbox.');
       }
     } catch (error) {
       console.error('Password reset error:', error);
+      // Show error message if password reset fails
       if (typeof window !== 'undefined') {
         window.alert('Failed to send password reset email. Please try again.');
       }

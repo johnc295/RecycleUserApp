@@ -14,36 +14,41 @@ import { useAuth } from '../context/AuthContext';
 import { globalStyles, colors } from '../styles/styles';
 
 export default function RegisterScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  // State variables to store form data and UI states
+  const [email, setEmail] = useState('');                    // Store email user types
+  const [password, setPassword] = useState('');              // Store password user types
+  const [confirmPassword, setConfirmPassword] = useState(''); // Store password confirmation
+  const [loading, setLoading] = useState(false);             // Track if registration is in progress
+  const { signup } = useAuth();  // Get the signup function from our auth system
 
+  // This function handles the registration process
   async function handleSignup() {
+    // Check if all fields are filled
     if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
+    // Check if passwords match
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
+    // Check if password is long enough (Firebase requirement)
     if (password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
 
     try {
-      setLoading(true);
-      await signup(email, password);
+      setLoading(true);  // Show loading state
+      await signup(email, password);  // Create the account with Firebase
       Alert.alert('Success', 'Account created successfully!');
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error.message);  // Show error if registration fails
     } finally {
-      setLoading(false);
+      setLoading(false);  // Hide loading state
     }
   }
 

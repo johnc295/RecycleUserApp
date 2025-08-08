@@ -13,24 +13,28 @@ import { useAuth } from '../context/AuthContext';
 import { globalStyles, colors } from '../styles/styles';
 
 export default function ItemCard({ item, navigation }) {
-  const [upvotes, setUpvotes] = useState(item.upvotes || 0);
-  const [downvotes, setDownvotes] = useState(item.downvotes || 0);
-  const [userVote, setUserVote] = useState(null);
-  const { user } = useAuth();
+  // State variables to track voting data and UI states
+  const [upvotes, setUpvotes] = useState(item.upvotes || 0);      // Number of upvotes
+  const [downvotes, setDownvotes] = useState(item.downvotes || 0); // Number of downvotes
+  const [userVote, setUserVote] = useState(null);                 // User's current vote (upvote/downvote/null)
+  const { user } = useAuth();  // Get current user info
 
-  // Load user's previous vote when component mounts
+  // This runs when the component first loads
+  // It checks if the current user has already voted on this item
   useEffect(() => {
     loadUserVote();
   }, []);
 
-  // Get user's previous vote from database
+  // This function checks if the current user has already voted on this item
   async function loadUserVote() {
-    if (!user) return;
+    if (!user) return;  // If no user is logged in, don't check
 
     try {
+      // Create a unique ID for this user's vote on this item
       const voteRef = doc(db, 'votes', `${user.uid}_${item.id}`);
       const voteDoc = await getDoc(voteRef);
       
+      // If the user has voted before, remember their vote
       if (voteDoc.exists()) {
         setUserVote(voteDoc.data().vote);
       }
@@ -39,7 +43,7 @@ export default function ItemCard({ item, navigation }) {
     }
   }
 
-  // Handle upvote/downvote
+  // This function handles when user taps upvote or downvote
   async function handleVote(voteType) {
     if (!user) {
       Alert.alert('Error', 'Please login to vote');
@@ -49,34 +53,34 @@ export default function ItemCard({ item, navigation }) {
     try {
       const voteRef = doc(db, 'votes', `${user.uid}_${item.id}`);
       
-      // If user already voted the same way, remove the vote
+      // If user already voted the same way, remove their vote (toggle off)
       if (userVote === voteType) {
         if (voteType === 'upvote') {
-          setUpvotes(upvotes - 1);
+          setUpvotes(upvotes - 1);  // Remove one upvote
         } else {
-          setDownvotes(downvotes - 1);
+          setDownvotes(downvotes - 1);  // Remove one downvote
         }
-        setUserVote(null);
-        await setDoc(voteRef, { vote: null });
+        setUserVote(null);  // Clear user's vote
+        await setDoc(voteRef, { vote: null });  // Save to database
         return;
       }
 
-      // Update vote counts
+      // Update vote counts based on what user clicked
       if (voteType === 'upvote') {
-        setUpvotes(upvotes + 1);
+        setUpvotes(upvotes + 1);  // Add one upvote
         if (userVote === 'downvote') {
-          setDownvotes(downvotes - 1);
+          setDownvotes(downvotes - 1);  // Remove previous downvote
         }
       } else {
-        setDownvotes(downvotes + 1);
+        setDownvotes(downvotes + 1);  // Add one downvote
         if (userVote === 'upvote') {
-          setUpvotes(upvotes - 1);
+          setUpvotes(upvotes - 1);  // Remove previous upvote
         }
       }
 
-      setUserVote(voteType);
+      setUserVote(voteType);  // Remember user's new vote
 
-      // Save vote to database
+      // Save the vote to the database
       await setDoc(voteRef, {
         vote: voteType,
         userId: user.uid,
@@ -89,16 +93,17 @@ export default function ItemCard({ item, navigation }) {
     }
   }
 
-  // Get badge style based on recyclability status
+  // This function creates the colored badge that shows recyclability status
   function getBadgeStyle() {
     const status = item.recyclabilityStatus?.toLowerCase();
     let badgeStyle = globalStyles.badge;
     let badgeText = item.recyclabilityStatus || 'Unknown';
 
+    // Choose badge color based on recyclability status
     if (status === 'recyclable') {
-      badgeStyle = [globalStyles.badge, globalStyles.recyclableBadge];
+      badgeStyle = [globalStyles.badge, globalStyles.recyclableBadge];  // Green badge
     } else if (status === 'non-recyclable') {
-      badgeStyle = [globalStyles.badge, globalStyles.nonRecyclableBadge];
+      badgeStyle = [globalStyles.badge, globalStyles.nonRecyclableBadge];  // Red badge
     }
 
     return (
@@ -108,12 +113,12 @@ export default function ItemCard({ item, navigation }) {
     );
   }
 
-  // Get icon color based on vote state
+  // This function determines the color of vote icons
   function getIconColor(voteType) {
     if (userVote === voteType) {
-      return colors.white;
+      return colors.white;  // White icon if user voted this way
     } else {
-      return colors.darkGray;
+      return colors.darkGray;  // Gray icon if user didn't vote this way
     }
   }
 
